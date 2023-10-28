@@ -36,6 +36,7 @@ public class BallRunner implements Runnable {
 
     private boolean isPaused = false;
     private Instant startTime;
+    private Duration totalPausedTime = Duration.ZERO;
 
     public static final int MIN_SPEED = 1;
     private int lives;
@@ -71,6 +72,16 @@ public class BallRunner implements Runnable {
         }
     }
 
+    public void pauseGame() {
+        if (isPaused) {
+            isPaused = false;
+        } else {
+            isPaused = true;
+            startTime = Instant.now();
+        }
+    }
+
+
     public void increaseBallSpeed() {
         ballSpeedX += 1;
         ballSpeedY += 1;
@@ -89,6 +100,13 @@ public class BallRunner implements Runnable {
 
         while (lives > 0) {
             if (!isPaused) {
+
+                Instant currenTime = Instant.now();
+                Duration elapsedTime = Duration.between(startTime,currenTime).minus(totalPausedTime);
+
+                long minutos = elapsedTime.toMinutes();
+                long segundos = elapsedTime.minusMinutes(minutos).getSeconds();
+
                 ballX = ballX + (ballSpeedX * ballDireccionX);
                 ballY = ballY + (ballSpeedY * ballDireccionY);
 
@@ -125,7 +143,19 @@ public class BallRunner implements Runnable {
                     }
                 }
 
-                ball.x = ballX;
+                boolean allBlocksCleared = true;
+                for (int i = 0; i < blocks.length; i++) {
+                    if (blocks[i].getWidth() > 0) {
+                        allBlocksCleared = false;
+                        break;
+                    }
+                }
+                if (allBlocksCleared) {
+                    Board.gameWon = true;
+                }
+
+
+                    ball.x = ballX;
                 ball.y = ballY;
             }
 
@@ -263,6 +293,9 @@ class Board extends JComponent implements Runnable, KeyListener {
                 SwingUtilities.invokeLater(() -> {
                     scoreLabel.setText("Score: " + score);
                     livesLabel.setText("Lives: " + ballRunner.getLives());
+                    if (gameWon){
+                        showYouWinDialog();
+                    }
                 });
             }
             try {
@@ -288,8 +321,11 @@ class Board extends JComponent implements Runnable, KeyListener {
         } else if (keyCode == KeyEvent.VK_R) {
             resetGame();
         } else if (keyCode == KeyEvent.VK_P) {
-            isPaused = !isPaused;
-        }
+            //isPaused = !isPaused;
+            ballRunner.pauseGame();
+        } else if (keyCode == KeyEvent.VK_SPACE) {
+            ballRunner.pauseGame();
+    }
     }
 
     @Override
