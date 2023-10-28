@@ -1,9 +1,6 @@
 package BreakOutGame;
 
 import java.awt.*;
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.Ellipse2D;
@@ -41,6 +38,7 @@ public class BallRunner implements Runnable {
     private Instant startTime;
 
     public static final int MIN_SPEED = 1;
+    private int lives;
 
     public BallRunner(Shape shape, Shape paddle, Rectangle2D.Double[] blocks, Color[] blockColors) {
         ball = (Ellipse2D.Double) shape;
@@ -51,6 +49,8 @@ public class BallRunner implements Runnable {
         this.paddle = (Rectangle2D.Double) paddle;
         this.blocks = blocks;
         this.blockColors = blockColors;
+
+        lives = 3;
 
         int blockWidth = 80;
         int blockHeight = 20;
@@ -86,7 +86,7 @@ public class BallRunner implements Runnable {
     @Override
     public void run() {
         startTime = Instant.now();
-        int lives = 3;
+
         while (lives > 0) {
             if (!isPaused) {
                 ballX = ballX + (ballSpeedX * ballDireccionX);
@@ -137,6 +137,10 @@ public class BallRunner implements Runnable {
         }
     }
 
+    public int getLives() {
+        return lives;
+    }
+
     private void showGameOverDialog() {
         Instant endTime = Instant.now();
         Duration duration = Duration.between(startTime, endTime);
@@ -152,20 +156,18 @@ class Board extends JComponent implements Runnable, KeyListener {
     Dimension preferredSize = null;
     Ellipse2D.Double ball;
     Rectangle2D.Double paddle;
-
     Thread ballAnimator;
     Thread refresh;
-
     Rectangle2D.Double[] blocks;
     Color[] blockColors;
-
     static JLabel scoreLabel;
     static int score = 0;
     static boolean gameIsOver = false;
+    static boolean gameWon = false;
 
     private BallRunner ballRunner;
-
     private boolean isPaused = false;
+    private JLabel livesLabel;
 
     public Board() {
         setLayout(new BorderLayout());
@@ -190,6 +192,11 @@ class Board extends JComponent implements Runnable, KeyListener {
         scoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
         scoreLabel.setForeground(Color.BLACK);
         add(scoreLabel, BorderLayout.SOUTH);
+
+        livesLabel = new JLabel("Lives: " + ballRunner.getLives(), JLabel.CENTER);
+        livesLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        livesLabel.setForeground(Color.BLACK);
+        add(livesLabel, BorderLayout.NORTH);
     }
 
     @Override
@@ -224,6 +231,14 @@ class Board extends JComponent implements Runnable, KeyListener {
             int x = (getWidth() - textWidth) / 2;
             int y = getHeight() / 2;
             g2.drawString(gameOverMessage, x, y);
+        } else if (gameWon) {
+            g2.setColor(Color.GREEN);
+            g2.setFont(new Font("Arial", Font.BOLD, 40));
+            String winMessage = "You Win!";
+            int textWidth = g2.getFontMetrics().stringWidth(winMessage);
+            int x = (getWidth() - textWidth) / 2;
+            int y = getHeight() / 2;
+            g2.drawString(winMessage, x, y);
         }
     }
 
@@ -242,11 +257,12 @@ class Board extends JComponent implements Runnable, KeyListener {
 
     @Override
     public void run() {
-        while (!gameIsOver) {
+        while (!gameIsOver && !gameWon) {
             if (!isPaused) {
                 repaint();
                 SwingUtilities.invokeLater(() -> {
                     scoreLabel.setText("Score: " + score);
+                    livesLabel.setText("Lives: " + ballRunner.getLives());
                 });
             }
             try {
@@ -302,10 +318,27 @@ class Board extends JComponent implements Runnable, KeyListener {
         Arrays.fill(blockColors, Color.BLACK);
         Arrays.fill(blocks, new Rectangle2D.Double());
         gameIsOver = false;
+        gameWon = false;
         isPaused = false;
         repaint();
     }
+
+    private void showYouWinDialog() {
+        JFrame winFrame = new JFrame("You Win!");
+        winFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JLabel winLabel = new JLabel("You Win!", JLabel.CENTER);
+        winLabel.setFont(new Font("Arial", Font.BOLD, 40));
+
+        winFrame.add(winLabel);
+        winFrame.setSize(300, 200);
+        winFrame.setLocationRelativeTo(null);
+        winFrame.setVisible(true);
+    }
 }
+
+
+
 
 
 
