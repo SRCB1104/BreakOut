@@ -9,9 +9,9 @@ public class Main {
     public static void main(String[] args) {
         JFrame f = new JFrame("Break Out Game");
         JPanel p = new JPanel(new BorderLayout());
-        Board board = new Board();
-        p.add(board, "Center");
-        f.addKeyListener(board);
+        Tablero Tablero = new Tablero();
+        p.add(Tablero, "Center");
+        f.addKeyListener(Tablero);
         f.setContentPane(p);
         f.setDefaultCloseOperation(3);
         f.pack();

@@ -15,148 +15,146 @@ public class BallRunner implements Runnable {
 
     public static final int MAX_X = 800;
     public static final int MAX_Y = 600;
-    public static final int SIGN = -1;
+    public static final int SIGNO = -1;
 
     public static final int DX = 10;
     public static final int DY = 10;
-    private Ellipse2D.Double ball;
+    private Ellipse2D.Double bola;
 
-    private int ballX;
-    private int ballY;
-    private int ballDireccionX = 1;
-    private int ballDireccionY = 1;
+    private int bolaX;
+    private int bolaY;
+    private int direccionXBola = 1;
+    private int direccionYBola = 1;
 
-    private Rectangle2D.Double paddle;
+    private Rectangle2D.Double paleta;
 
-    private Rectangle2D.Double[] blocks;
-    private Color[] blockColors;
+    private Rectangle2D.Double[] bloques;
+    private Color[] coloresBloque;
 
-    private int ballSpeedX = DX;
-    private int ballSpeedY = DY;
+    private int velocidadXBola = DX;
+    private int velocidadYBola = DY;
 
-    private boolean isPaused = false;
-    private Instant startTime;
-    private Duration totalPausedTime = Duration.ZERO;
+    private boolean estaEnPausa = false;
+    private Instant tiempoInicio;
+    private Duration tiempoTotalEnPausa = Duration.ZERO;
 
-    public static final int MIN_SPEED = 1;
-    private int lives;
+    public static final int VELOCIDAD_MINIMA = 1;
+    private int vidas;
 
-    public BallRunner(Shape shape, Shape paddle, Rectangle2D.Double[] blocks, Color[] blockColors) {
-        ball = (Ellipse2D.Double) shape;
-        ballX = 400;
-        ballY = 300;
-        ball.x = ballX;
-        ball.y = ballY;
-        this.paddle = (Rectangle2D.Double) paddle;
-        this.blocks = blocks;
-        this.blockColors = blockColors;
+    public BallRunner(Shape formaBola, Shape paleta, Rectangle2D.Double[] bloques, Color[] coloresBloque) {
+        bola = (Ellipse2D.Double) formaBola;
+        bolaX = 400;
+        bolaY = 300;
+        bola.x = bolaX;
+        bola.y = bolaY;
+        this.paleta = (Rectangle2D.Double) paleta;
+        this.bloques = bloques;
+        this.coloresBloque = coloresBloque;
 
-        lives = 3;
+        vidas = 3;
 
-        int blockWidth = 80;
-        int blockHeight = 20;
-        int blockSpacingX = 10;
-        int blocksPerRow = 8;
-        int blockRows = 4;
-        int initialX = (MAX_X - (blockWidth + blockSpacingX) * blocksPerRow) / 2;
-        int initialY = 50;
-        Random random = new Random();
+        int anchoBloque = 80;
+        int altoBloque = 20;
+        int espaciadoXBloque = 10;
+        int bloquesPorFila = 8;
+        int filasBloques = 4;
+        int xInicial = (MAX_X - (anchoBloque + espaciadoXBloque) * bloquesPorFila) / 2;
+        int yInicial = 50;
+        Random aleatorio = new Random();
 
-        for (int i = 0; i < blocks.length; i++) {
-            int row = i / blocksPerRow;
-            int col = i % blocksPerRow;
-            int x = initialX + col * (blockWidth + blockSpacingX);
-            int y = initialY + row * (blockHeight + blockSpacingX);
-            blocks[i] = new Rectangle2D.Double(x, y, blockWidth, blockHeight);
-            blockColors[i] = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+        for (int i = 0; i < bloques.length; i++) {
+            int fila = i / bloquesPorFila;
+            int col = i % bloquesPorFila;
+            int x = xInicial + col * (anchoBloque + espaciadoXBloque);
+            int y = yInicial + fila * (altoBloque + espaciadoXBloque);
+            bloques[i] = new Rectangle2D.Double(x, y, anchoBloque, altoBloque);
+            coloresBloque[i] = new Color(aleatorio.nextInt(256), aleatorio.nextInt(256), aleatorio.nextInt(256));
         }
     }
 
-    public void pauseGame() {
-        if (isPaused) {
-            isPaused = false;
+    public void pausarJuego() {
+        if (estaEnPausa) {
+            estaEnPausa = false;
         } else {
-            isPaused = true;
-            startTime = Instant.now();
+            estaEnPausa = true;
+            tiempoInicio = Instant.now();
         }
     }
 
-
-    public void increaseBallSpeed() {
-        ballSpeedX += 1;
-        ballSpeedY += 1;
+    public void aumentarVelocidadBola() {
+        velocidadXBola += 1;
+        velocidadYBola += 1;
     }
 
-    public void decreaseBallSpeed() {
-        if (ballSpeedX > MIN_SPEED || ballSpeedY > MIN_SPEED) {
-            ballSpeedX -= 1;
-            ballSpeedY -= 1;
+    public void disminuirVelocidadBola() {
+        if (velocidadXBola > VELOCIDAD_MINIMA || velocidadYBola > VELOCIDAD_MINIMA) {
+            velocidadXBola -= 1;
+            velocidadYBola -= 1;
         }
     }
 
     @Override
     public void run() {
-        startTime = Instant.now();
+        tiempoInicio = Instant.now();
 
-        while (lives > 0) {
-            if (!isPaused) {
+        while (vidas > 0) {
+            if (!estaEnPausa) {
 
-                Instant currenTime = Instant.now();
-                Duration elapsedTime = Duration.between(startTime,currenTime).minus(totalPausedTime);
+                Instant tiempoActual = Instant.now();
+                Duration tiempoTranscurrido = Duration.between(tiempoInicio, tiempoActual).minus(tiempoTotalEnPausa);
 
-                long minutos = elapsedTime.toMinutes();
-                long segundos = elapsedTime.minusMinutes(minutos).getSeconds();
+                long minutos = tiempoTranscurrido.toMinutes();
+                long segundos = tiempoTranscurrido.minusMinutes(minutos).getSeconds();
 
-                ballX = ballX + (ballSpeedX * ballDireccionX);
-                ballY = ballY + (ballSpeedY * ballDireccionY);
+                bolaX = bolaX + (velocidadXBola * direccionXBola);
+                bolaY = bolaY + (velocidadYBola * direccionYBola);
 
-                if (ballX < 0 || ballX > (MAX_X - 20)) {
-                    ballDireccionX *= -1;
+                if (bolaX < 0 || bolaX > (MAX_X - 20)) {
+                    direccionXBola *= -1;
                 }
 
-                if (ballY < 0) {
-                    ballDireccionY *= -1;
-                } else if (ballY > (MAX_Y - 20)) {
-                    lives--;
-                    if (lives == 0) {
-                        showGameOverDialog();
+                if (bolaY < 0) {
+                    direccionYBola *= -1;
+                } else if (bolaY > (MAX_Y - 20)) {
+                    vidas--;
+                    if (vidas == 0) {
+                        mostrarDialogoFinDeJuego();
                         break;
                     } else {
-                        ballX = 400;
-                        ballY = 300;
-                        ballDireccionX = 1;
-                        ballDireccionY = 1;
+                        bolaX = 400;
+                        bolaY = 300;
+                        direccionXBola = 1;
+                        direccionYBola = 1;
                     }
                 }
 
-                if (ball.intersects(paddle.getX(), paddle.getY(), paddle.getWidth(), paddle.getHeight())) {
-                    ballDireccionY = -ballDireccionY;
-                    ballY = (int) (paddle.getY() - ball.getHeight());
-                    Board.updateScore(1);
+                if (bola.intersects(paleta.getX(), paleta.getY(), paleta.getWidth(), paleta.getHeight())) {
+                    direccionYBola = -direccionYBola;
+                    bolaY = (int) (paleta.getY() - bola.getHeight());
+                    Tablero.actualizarPuntuacion(1);
                 }
 
-                for (int i = 0; i < blocks.length; i++) {
-                    if (ball.intersects(blocks[i])) {
-                        ballDireccionY = -ballDireccionY;
-                        blocks[i] = new Rectangle2D.Double(0, 0, 0, 0);
-                        Board.updateScore(1);
+                for (int i = 0; i < bloques.length; i++) {
+                    if (bola.intersects(bloques[i])) {
+                        direccionYBola = -direccionYBola;
+                        bloques[i] = new Rectangle2D.Double(0, 0, 0, 0);
+                        Tablero.actualizarPuntuacion(1);
                     }
                 }
 
-                boolean allBlocksCleared = true;
-                for (int i = 0; i < blocks.length; i++) {
-                    if (blocks[i].getWidth() > 0) {
-                        allBlocksCleared = false;
+                boolean todosBloquesEliminados = true;
+                for (int i = 0; i < bloques.length; i++) {
+                    if (bloques[i].getWidth() > 0) {
+                        todosBloquesEliminados = false;
                         break;
                     }
                 }
-                if (allBlocksCleared) {
-                    Board.gameWon = true;
+                if (todosBloquesEliminados) {
+                    Tablero.juegoGanado = true;
                 }
 
-
-                    ball.x = ballX;
-                ball.y = ballY;
+                bola.x = bolaX;
+                bola.y = bolaY;
             }
 
             try {
@@ -167,66 +165,66 @@ public class BallRunner implements Runnable {
         }
     }
 
-    public int getLives() {
-        return lives;
+    public int getVidas() {
+        return vidas;
     }
 
-    private void showGameOverDialog() {
-        Instant endTime = Instant.now();
-        Duration duration = Duration.between(startTime, endTime);
-        long minutes = duration.toMinutes();
-        long seconds = duration.minusMinutes(minutes).getSeconds();
+    private void mostrarDialogoFinDeJuego() {
+        Instant tiempoFinal = Instant.now();
+        Duration duracion = Duration.between(tiempoInicio, tiempoFinal);
+        long minutos = duracion.toMinutes();
+        long segundos = duracion.minusMinutes(minutos).getSeconds();
 
-        String message = "Time played: " + minutes + " minutes " + seconds + " seconds\nScore: " + Board.score;
-        JOptionPane.showMessageDialog(null, message, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+        String mensaje = "Tiempo jugado: " + minutos + " minutos " + segundos + " segundos\nPuntuación: " + Tablero.puntuacion;
+        JOptionPane.showMessageDialog(null, mensaje, "Fin del Juego", JOptionPane.INFORMATION_MESSAGE);
     }
 }
 
-class Board extends JComponent implements Runnable, KeyListener {
-    Dimension preferredSize = null;
-    Ellipse2D.Double ball;
-    Rectangle2D.Double paddle;
-    Thread ballAnimator;
-    Thread refresh;
-    Rectangle2D.Double[] blocks;
-    Color[] blockColors;
-    static JLabel scoreLabel;
-    static int score = 0;
-    static boolean gameIsOver = false;
-    static boolean gameWon = false;
+class Tablero extends JComponent implements Runnable, KeyListener {
+    Dimension tamañoPreferido = null;
+    Ellipse2D.Double bola;
+    Rectangle2D.Double paleta;
+    Thread animadorBola;
+    Thread refrescar;
+    Rectangle2D.Double[] bloques;
+    Color[] coloresBloque;
+    static JLabel etiquetaPuntuacion;
+    static int puntuacion = 0;
+    static boolean juegoTerminado = false;
+    static boolean juegoGanado = false;
 
-    private BallRunner ballRunner;
-    private boolean isPaused = false;
-    private JLabel livesLabel;
+    private BallRunner corredorBola;
+    private boolean estaEnPausa = false;
+    private JLabel etiquetaVidas;
 
-    public Board() {
+    public Tablero() {
         setLayout(new BorderLayout());
         setOpaque(true);
         setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.BLACK));
-        ball = new Ellipse2D.Double(400, 300, 20, 20);
-        paddle = new Rectangle2D.Double(350, 550, 100, 10);
+        bola = new Ellipse2D.Double(400, 300, 20, 20);
+        paleta = new Rectangle2D.Double(350, 550, 100, 10);
 
-        blocks = new Rectangle2D.Double[32];
-        blockColors = new Color[32];
+        bloques = new Rectangle2D.Double[32];
+        coloresBloque = new Color[32];
 
-        ballRunner = new BallRunner(ball, paddle, blocks, blockColors);
-        ballAnimator = new Thread(ballRunner, "BounceThread");
-        ballAnimator.start();
-        refresh = new Thread(this, "RefreshThread");
-        refresh.start();
+        corredorBola = new BallRunner(bola, paleta, bloques, coloresBloque);
+        animadorBola = new Thread(corredorBola, "HiloBola");
+        animadorBola.start();
+        refrescar = new Thread(this, "HiloRefrescar");
+        refrescar.start();
         addKeyListener(this);
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
 
-        scoreLabel = new JLabel("Score: " + score, JLabel.CENTER);
-        scoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        scoreLabel.setForeground(Color.BLACK);
-        add(scoreLabel, BorderLayout.SOUTH);
+        etiquetaPuntuacion = new JLabel("Puntuación: " + puntuacion, JLabel.CENTER);
+        etiquetaPuntuacion.setFont(new Font("Arial", Font.BOLD, 16));
+        etiquetaPuntuacion.setForeground(Color.BLACK);
+        add(etiquetaPuntuacion, BorderLayout.SOUTH);
 
-        livesLabel = new JLabel("Lives: " + ballRunner.getLives(), JLabel.CENTER);
-        livesLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        livesLabel.setForeground(Color.BLACK);
-        add(livesLabel, BorderLayout.NORTH);
+        etiquetaVidas = new JLabel("Vidas: " + corredorBola.getVidas(), JLabel.CENTER);
+        etiquetaVidas.setFont(new Font("Arial", Font.BOLD, 16));
+        etiquetaVidas.setForeground(Color.BLACK);
+        add(etiquetaVidas, BorderLayout.NORTH);
     }
 
     @Override
@@ -243,58 +241,58 @@ class Board extends JComponent implements Runnable, KeyListener {
         g2.setStroke(new BasicStroke(5.0f));
 
         g2.setColor(Color.RED);
-        g2.fill(ball);
+        g2.fill(bola);
 
         g2.setColor(Color.BLACK);
-        g2.fill(paddle);
+        g2.fill(paleta);
 
-        for (int i = 0; i < blocks.length; i++) {
-            g2.setColor(blockColors[i]);
-            g2.fill(blocks[i]);
+        for (int i = 0; i < bloques.length; i++) {
+            g2.setColor(coloresBloque[i]);
+            g2.fill(bloques[i]);
         }
 
-        if (gameIsOver) {
+        if (juegoTerminado) {
             g2.setColor(Color.RED);
             g2.setFont(new Font("Arial", Font.BOLD, 40));
-            String gameOverMessage = "Game Over";
-            int textWidth = g2.getFontMetrics().stringWidth(gameOverMessage);
-            int x = (getWidth() - textWidth) / 2;
+            String mensajeFinDeJuego = "Fin del Juego";
+            int anchoTexto = g2.getFontMetrics().stringWidth(mensajeFinDeJuego);
+            int x = (getWidth() - anchoTexto) / 2;
             int y = getHeight() / 2;
-            g2.drawString(gameOverMessage, x, y);
-        } else if (gameWon) {
+            g2.drawString(mensajeFinDeJuego, x, y);
+        } else if (juegoGanado) {
             g2.setColor(Color.GREEN);
             g2.setFont(new Font("Arial", Font.BOLD, 40));
-            String winMessage = "You Win!";
-            int textWidth = g2.getFontMetrics().stringWidth(winMessage);
-            int x = (getWidth() - textWidth) / 2;
+            String mensajeVictoria = "¡Has Ganado!";
+            int anchoTexto = g2.getFontMetrics().stringWidth(mensajeVictoria);
+            int x = (getWidth() - anchoTexto) / 2;
             int y = getHeight() / 2;
-            g2.drawString(winMessage, x, y);
+            g2.drawString(mensajeVictoria, x, y);
         }
     }
 
     public Dimension getPreferredSize() {
-        if (preferredSize == null) {
+        if (tamañoPreferido == null) {
             return new Dimension(800, 600);
         } else {
             return super.getPreferredSize();
         }
     }
 
-    public void setPreferredSize(Dimension newPrefSize) {
-        preferredSize = newPrefSize;
-        super.setPreferredSize(newPrefSize);
+    public void setPreferredSize(Dimension nuevoTamañoPreferido) {
+        tamañoPreferido = nuevoTamañoPreferido;
+        super.setPreferredSize(nuevoTamañoPreferido);
     }
 
     @Override
     public void run() {
-        while (!gameIsOver && !gameWon) {
-            if (!isPaused) {
+        while (!juegoTerminado && !juegoGanado) {
+            if (!estaEnPausa) {
                 repaint();
                 SwingUtilities.invokeLater(() -> {
-                    scoreLabel.setText("Score: " + score);
-                    livesLabel.setText("Lives: " + ballRunner.getLives());
-                    if (gameWon){
-                        showYouWinDialog();
+                    etiquetaPuntuacion.setText("Puntuación: " + puntuacion);
+                    etiquetaVidas.setText("Vidas: " + corredorBola.getVidas());
+                    if (juegoGanado) {
+                        mostrarDialogoVictoria();
                     }
                 });
             }
@@ -310,22 +308,22 @@ class Board extends JComponent implements Runnable, KeyListener {
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
 
-        if (keyCode == KeyEvent.VK_LEFT && paddle.getX() > 0) {
-            paddle.x -= 10;
-        } else if (keyCode == KeyEvent.VK_RIGHT && paddle.getX() + paddle.getWidth() < getWidth()) {
-            paddle.x += 10;
+        if (keyCode == KeyEvent.VK_LEFT && paleta.getX() > 0) {
+            paleta.x -= 10;
+        } else if (keyCode == KeyEvent.VK_RIGHT && paleta.getX() + paleta.getWidth() < getWidth()) {
+            paleta.x += 10;
         } else if (keyCode == KeyEvent.VK_PLUS || keyCode == KeyEvent.VK_ADD) {
-            ballRunner.increaseBallSpeed();
+            corredorBola.aumentarVelocidadBola();
         } else if (keyCode == KeyEvent.VK_MINUS || keyCode == KeyEvent.VK_SUBTRACT) {
-            ballRunner.decreaseBallSpeed();
+            corredorBola.disminuirVelocidadBola();
         } else if (keyCode == KeyEvent.VK_R) {
-            resetGame();
+            reiniciarJuego();
         } else if (keyCode == KeyEvent.VK_P) {
-            //isPaused = !isPaused;
-            ballRunner.pauseGame();
+            //estaEnPausa = !estaEnPausa;
+            corredorBola.pausarJuego();
         } else if (keyCode == KeyEvent.VK_SPACE) {
-            ballRunner.pauseGame();
-    }
+            corredorBola.pausarJuego();
+        }
     }
 
     @Override
@@ -336,48 +334,39 @@ class Board extends JComponent implements Runnable, KeyListener {
     public void keyReleased(KeyEvent e) {
     }
 
-    public static void updateScore(int points) {
-        score += points;
-        scoreLabel.setText("Score: " + score);
+    public static void actualizarPuntuacion(int puntos) {
+        puntuacion += puntos;
+        etiquetaPuntuacion.setText("Puntuación: " + puntuacion);
     }
 
-    public static void gameOver() {
-        gameIsOver = true;
-        scoreLabel.setText("Game Over");
+    public static void juegoTerminado() {
+        juegoTerminado = true;
+        etiquetaPuntuacion.setText("Fin del Juego");
     }
 
-    private void resetGame() {
-        ballRunner = new BallRunner(ball, paddle, blocks, blockColors);
-        ballAnimator = new Thread(ballRunner, "BounceThread");
-        ballAnimator.start();
-        score = 0;
-        Arrays.fill(blockColors, Color.BLACK);
-        Arrays.fill(blocks, new Rectangle2D.Double());
-        gameIsOver = false;
-        gameWon = false;
-        isPaused = false;
+    private void reiniciarJuego() {
+        corredorBola = new BallRunner(bola, paleta, bloques, coloresBloque);
+        animadorBola = new Thread(corredorBola, "HiloBola");
+        animadorBola.start();
+        puntuacion = 0;
+        Arrays.fill(coloresBloque, Color.BLACK);
+        Arrays.fill(bloques, new Rectangle2D.Double());
+        juegoTerminado = false;
+        juegoGanado = false;
+        estaEnPausa = false;
         repaint();
     }
 
-    private void showYouWinDialog() {
-        JFrame winFrame = new JFrame("You Win!");
-        winFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    private void mostrarDialogoVictoria() {
+        JFrame marcoVictoria = new JFrame("¡Has Ganado!");
+        marcoVictoria.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JLabel winLabel = new JLabel("You Win!", JLabel.CENTER);
-        winLabel.setFont(new Font("Arial", Font.BOLD, 40));
+        JLabel etiquetaVictoria = new JLabel("¡Has Ganado!", JLabel.CENTER);
+        etiquetaVictoria.setFont(new Font("Arial", Font.BOLD, 40));
 
-        winFrame.add(winLabel);
-        winFrame.setSize(300, 200);
-        winFrame.setLocationRelativeTo(null);
-        winFrame.setVisible(true);
+        marcoVictoria.add(etiquetaVictoria);
+        marcoVictoria.setSize(300, 200);
+        marcoVictoria.setLocationRelativeTo(null);
+        marcoVictoria.setVisible(true);
     }
 }
-
-
-
-
-
-
-
-
-
