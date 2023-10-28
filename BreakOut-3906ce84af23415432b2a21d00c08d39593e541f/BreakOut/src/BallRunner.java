@@ -39,7 +39,8 @@ public class BallRunner implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        int lives = 3; // Número de vidas al inicio
+        while (lives > 0) {
             ballX = ballX + (DX * ballDireccionX);
             ballY = ballY + (DY * ballDireccionY);
 
@@ -49,22 +50,29 @@ public class BallRunner implements Runnable {
 
             if (ballY < 0) {
                 ballDireccionY *= -1;
+            } else if (ballY > (MAX_Y - 20)) {
+                lives--; // Pierde una vida
+                if (lives == 0) {
+                    Board.gameOver(); // Se han perdido todas las vidas, juego terminado
+                    break;
+                } else {
+                    ballX = 320;
+                    ballY = 240;
+                    ballDireccionX = 1;
+                    ballDireccionY = 1;
+                }
             }
 
             if (ball.intersects(paddle.getX(), paddle.getY(), paddle.getWidth(), paddle.getHeight())) {
                 ballDireccionY = -1;
-            } else if (ballY > (MAX_Y - 20)) {
-                ballX = 320;
-                ballY = 240;
-                ballDireccionX = 1;
-                ballDireccionY = 1;
             }
 
             for (int i = 0; i < blocks.length; i++) {
                 if (ball.intersects(blocks[i])) {
-                    ballDireccionY *= -1;
+                    ballDireccionY *= -1; // Revertir la dirección vertical de la pelota
                     blocks[i] = new Rectangle2D.Double(0, 0, 0, 0);
-                    Board.updateScore(10); // Actualiza la puntuación aquí
+                    Board.updateScore(1);
+                    break;
                 }
             }
 
@@ -93,6 +101,7 @@ class Board extends JComponent implements Runnable, KeyListener {
 
     static JLabel scoreLabel;
     static int score = 0;
+    static boolean gameIsOver = false;
 
     public Board() {
         setLayout(new BorderLayout());
@@ -159,7 +168,14 @@ class Board extends JComponent implements Runnable, KeyListener {
             g2.setColor(blockColors[i]);
             g2.fill(blocks[i]);
         }
+
+        if (gameIsOver) {
+            g2.setColor(Color.RED);
+            g2.setFont(new Font("Arial", Font.BOLD, 40));
+            g2.drawString("Game Over", 250, 250);
+        }
     }
+
 
     public Dimension getPreferredSize() {
         if (preferredSize == null) {
@@ -175,7 +191,7 @@ class Board extends JComponent implements Runnable, KeyListener {
     }
 
     public void run() {
-        while (true) {
+        while (!gameIsOver) {
             repaint();
             SwingUtilities.invokeLater(() -> {
                 scoreLabel.setText("Score: " + score);
@@ -207,9 +223,13 @@ class Board extends JComponent implements Runnable, KeyListener {
     public void keyReleased(KeyEvent e) {
     }
 
-
     public static void updateScore(int points) {
         score += points;
         scoreLabel.setText("Score: " + score);
+    }
+
+    public static void gameOver() {
+        gameIsOver = true;
+        scoreLabel.setText("Game Over");
     }
 }
