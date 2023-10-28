@@ -181,7 +181,7 @@ public class BallRunner implements Runnable {
 }
 
 class Tablero extends JComponent implements Runnable, KeyListener {
-    Dimension tamañoPreferido = null;
+    Dimension tamanioPreferido = null;
     Ellipse2D.Double bola;
     Rectangle2D.Double Raqueta;
     Thread animadorBola;
@@ -271,16 +271,16 @@ class Tablero extends JComponent implements Runnable, KeyListener {
     }
 
     public Dimension getPreferredSize() {
-        if (tamañoPreferido == null) {
+        if (tamanioPreferido == null) {
             return new Dimension(800, 600);
         } else {
             return super.getPreferredSize();
         }
     }
 
-    public void setPreferredSize(Dimension nuevoTamañoPreferido) {
-        tamañoPreferido = nuevoTamañoPreferido;
-        super.setPreferredSize(nuevoTamañoPreferido);
+    public void setPreferredSize(Dimension nuevoTamanioPreferido) {
+        tamanioPreferido = nuevoTamanioPreferido;
+        super.setPreferredSize(nuevoTamanioPreferido);
     }
 
     @Override
