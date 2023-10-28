@@ -26,7 +26,7 @@ public class BallRunner implements Runnable {
     private int direccionXBola = 1;
     private int direccionYBola = 1;
 
-    private Rectangle2D.Double paleta;
+    private Rectangle2D.Double Raqueta;
 
     private Rectangle2D.Double[] bloques;
     private Color[] coloresBloque;
@@ -41,13 +41,13 @@ public class BallRunner implements Runnable {
     public static final int VELOCIDAD_MINIMA = 1;
     private int vidas;
 
-    public BallRunner(Shape formaBola, Shape paleta, Rectangle2D.Double[] bloques, Color[] coloresBloque) {
+    public BallRunner(Shape formaBola, Shape Raqueta, Rectangle2D.Double[] bloques, Color[] coloresBloque) {
         bola = (Ellipse2D.Double) formaBola;
         bolaX = 400;
         bolaY = 300;
         bola.x = bolaX;
         bola.y = bolaY;
-        this.paleta = (Rectangle2D.Double) paleta;
+        this.Raqueta = (Rectangle2D.Double) Raqueta;
         this.bloques = bloques;
         this.coloresBloque = coloresBloque;
 
@@ -60,7 +60,7 @@ public class BallRunner implements Runnable {
         int filasBloques = 4;
         int xInicial = (MAX_X - (anchoBloque + espaciadoXBloque) * bloquesPorFila) / 2;
         int yInicial = 50;
-        Random aleatorio = new Random();
+        Random Random = new Random();
 
         for (int i = 0; i < bloques.length; i++) {
             int fila = i / bloquesPorFila;
@@ -68,7 +68,7 @@ public class BallRunner implements Runnable {
             int x = xInicial + col * (anchoBloque + espaciadoXBloque);
             int y = yInicial + fila * (altoBloque + espaciadoXBloque);
             bloques[i] = new Rectangle2D.Double(x, y, anchoBloque, altoBloque);
-            coloresBloque[i] = new Color(aleatorio.nextInt(256), aleatorio.nextInt(256), aleatorio.nextInt(256));
+            coloresBloque[i] = new Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256));
         }
     }
 
@@ -128,9 +128,9 @@ public class BallRunner implements Runnable {
                     }
                 }
 
-                if (bola.intersects(paleta.getX(), paleta.getY(), paleta.getWidth(), paleta.getHeight())) {
+                if (bola.intersects(Raqueta.getX(), Raqueta.getY(), Raqueta.getWidth(), Raqueta.getHeight())) {
                     direccionYBola = -direccionYBola;
-                    bolaY = (int) (paleta.getY() - bola.getHeight());
+                    bolaY = (int) (Raqueta.getY() - bola.getHeight());
                     Tablero.actualizarPuntuacion(1);
                 }
 
@@ -183,7 +183,7 @@ public class BallRunner implements Runnable {
 class Tablero extends JComponent implements Runnable, KeyListener {
     Dimension tamañoPreferido = null;
     Ellipse2D.Double bola;
-    Rectangle2D.Double paleta;
+    Rectangle2D.Double Raqueta;
     Thread animadorBola;
     Thread refrescar;
     Rectangle2D.Double[] bloques;
@@ -202,12 +202,12 @@ class Tablero extends JComponent implements Runnable, KeyListener {
         setOpaque(true);
         setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.BLACK));
         bola = new Ellipse2D.Double(400, 300, 20, 20);
-        paleta = new Rectangle2D.Double(350, 550, 100, 10);
+        Raqueta = new Rectangle2D.Double(350, 550, 100, 10);
 
         bloques = new Rectangle2D.Double[32];
         coloresBloque = new Color[32];
 
-        corredorBola = new BallRunner(bola, paleta, bloques, coloresBloque);
+        corredorBola = new BallRunner(bola, Raqueta, bloques, coloresBloque);
         animadorBola = new Thread(corredorBola, "HiloBola");
         animadorBola.start();
         refrescar = new Thread(this, "HiloRefrescar");
@@ -244,7 +244,7 @@ class Tablero extends JComponent implements Runnable, KeyListener {
         g2.fill(bola);
 
         g2.setColor(Color.BLACK);
-        g2.fill(paleta);
+        g2.fill(Raqueta);
 
         for (int i = 0; i < bloques.length; i++) {
             g2.setColor(coloresBloque[i]);
@@ -308,10 +308,10 @@ class Tablero extends JComponent implements Runnable, KeyListener {
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
 
-        if (keyCode == KeyEvent.VK_LEFT && paleta.getX() > 0) {
-            paleta.x -= 10;
-        } else if (keyCode == KeyEvent.VK_RIGHT && paleta.getX() + paleta.getWidth() < getWidth()) {
-            paleta.x += 10;
+        if (keyCode == KeyEvent.VK_LEFT && Raqueta.getX() > 0) {
+            Raqueta.x -= 10;
+        } else if (keyCode == KeyEvent.VK_RIGHT && Raqueta.getX() + Raqueta.getWidth() < getWidth()) {
+            Raqueta.x += 10;
         } else if (keyCode == KeyEvent.VK_PLUS || keyCode == KeyEvent.VK_ADD) {
             corredorBola.aumentarVelocidadBola();
         } else if (keyCode == KeyEvent.VK_MINUS || keyCode == KeyEvent.VK_SUBTRACT) {
@@ -345,7 +345,7 @@ class Tablero extends JComponent implements Runnable, KeyListener {
     }
 
     private void reiniciarJuego() {
-        corredorBola = new BallRunner(bola, paleta, bloques, coloresBloque);
+        corredorBola = new BallRunner(bola, Raqueta, bloques, coloresBloque);
         animadorBola = new Thread(corredorBola, "HiloBola");
         animadorBola.start();
         puntuacion = 0;
